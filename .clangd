@@ -1,0 +1,29 @@
+CompileFlags:
+  Remove: [-fzero-init-padding-bits=all, -fno-malloc-dce, -fno-tree-switch-conversion, -fno-shrink-wrap, -mtext-section-literals, -mlongcalls, -fstrict-volatile-bitfields, -march=rv32imac_zicsr_zifencei]
+  Add: [
+    # Toolchain include paths (adjust path to match your ESP-IDF installation)
+    "-isystem", "$IDF_PATH/components/newlib/include",
+    "-isystem", "$IDF_PATH/components/freertos/include",
+    "-isystem", "$IDF_PATH/components/freertos/FreeRTOS-Kernel/include",
+    "-isystem", "$IDF_PATH/components/esp_common/include",
+    "-isystem", "$IDF_PATH/components/esp_system/include",
+    "-isystem", "$IDF_PATH/components/esp_rom/include",
+    "-isystem", "$IDF_PATH/components/xtensa/include",
+    "-isystem", "$IDF_PATH/components/xtensa/esp32/include",
+    "-isystem", "$IDF_PATH/components/soc/include",
+    "-isystem", "$IDF_PATH/components/soc/esp32/include",
+    "-isystem", "$IDF_PATH/components/hal/include",
+    "-isystem", "$IDF_PATH/components/heap/include",
+    "-isystem", "$IDF_PATH/components/log/include",
+    "-isystem", "$IDF_PATH/components/driver/include",
+    "-isystem", "$IDF_PATH/components/vfs/include",
+    "-isystem", "$IDF_PATH/components/esp_ringbuf/include",
+    "-isystem", "$IDF_PATH/components/esp_timer/include",
+    "-isystem", "$IDF_PATH/components/esp_event/include",
+    "-isystem", "$IDF_PATH/components/nvs_flash/include",
+
+    # Common macros and flags
+    "-DIDF_VER=latest",
+    "-D__ESP32__",
+    "-DESP_PLATFORM",
+  ]

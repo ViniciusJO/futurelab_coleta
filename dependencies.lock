@@ -1,0 +1,50 @@
+dependencies:
+  espressif/usb_host_cdc_acm:
+    component_hash: 72cd608e75ac356dd617239edcb4b9a0a63bdce7eae0c64c7715db5108bce578
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 2.1.0
+  espressif/usb_host_ch34x_vcp:
+    component_hash: cc6f17936a11aa0ba460e716bd9b70fcd445824bcc7882afbe3ede3513f80c59
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    - name: espressif/usb_host_cdc_acm
+      registry_url: https://components.espressif.com
+      require: public
+      version: ^2.1.0
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 2.2.0
+  espressif/usb_host_vcp:
+    component_hash: 99b3ad314fa966cb32970e468625672994e259c69c7c668d9c0a13d65993a0e7
+    dependencies:
+    - name: espressif/usb_host_cdc_acm
+      registry_url: https://components.espressif.com
+      require: public
+      version: '>=1.0.4,<3.0.0'
+    - name: idf
+      require: private
+      version: '>=4.4'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.0~5
+  idf:
+    source:
+      type: idf
+    version: 6.0.0
+direct_dependencies:
+- espressif/usb_host_ch34x_vcp
+- espressif/usb_host_vcp
+- idf
+manifest_hash: 0374ce61a8af05b7d8ba75e75f813a4bdaa77ab8604ec46f03e5373e2e3f59e0
+target: esp32s3
+version: 2.0.0
