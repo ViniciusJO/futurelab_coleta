@@ -326,7 +326,7 @@ static void usb_lib_task(void *arg) {
   }
 }
 
-static SemaphoreHandle_t device_disconnected_sem;
+static SemaphoreHandle_t device_disconnected_sem, wait_elm_response;
 
 static void handle_event(const cdc_acm_host_dev_event_data_t *event, void *user_ctx) {
     switch (event->type) {
@@ -351,10 +351,6 @@ uint8_t char_to_byte(char c) {
   if(c >= 'a' && c <= 'f') return c - 'a';
   return 0;
 }
-
-// TODO: replace boolean by an mutex
-bool wait_elm_response = false;
-
 
 void print_data_vector(char * const name, const uint8_t * const data, size_t data_len) {
   printf("%s: [ ", name);
@@ -389,7 +385,7 @@ static bool handle_rx(const uint8_t *data, size_t data_len, void *arg) {
   data_len -= 3;
 
   // Signals packet received
-  wait_elm_response = false;
+  xSemaphoreGive(wait_elm_response);
 
   print_data_vector(COLOR_YELLOW"Payload" COLOR_RESET, data, data_len);
 
@@ -463,15 +459,12 @@ invalid_payload:
 }
 
 esp_err_t _send_elm_command(CdcAcmDevice *dev, const char * const cmd, bool wait, bool log) {
-  while(wait_elm_response) vTaskDelay(100);
-
+  if(wait) xSemaphoreTake(wait_elm_response, portMAX_DELAY);
   const uint8_t msg_len = strlen(cmd) + 1;
   char * const msg = (char*)malloc(msg_len);
   sprintf(msg, "%s\r", cmd);
   if(log) printf(">> %s\n", msg);
   esp_err_t err = vcp_tx_blocking(dev, (uint8_t*)msg, msg_len);
-  // ESP_ERROR_CHECK(vcp_set_control_line_state(true, true));
-  if(wait) wait_elm_response = true;
   free(msg);
   return err;
 }
@@ -603,6 +596,8 @@ void app_main(void) {
 
   device_disconnected_sem = xSemaphoreCreateBinary();
   assert_true(device_disconnected_sem);
+  wait_elm_response = xSemaphoreCreateBinary();
+  assert_true(wait_elm_response);
 
   usb_host_config_t host_config = {
     .skip_phy_setup = false,
