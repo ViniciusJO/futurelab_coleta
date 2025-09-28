@@ -23,6 +23,8 @@
 #include "neopixel.h"
 #include "vcp.h"
 
+#include "local_assert.h"
+
 #define DECODER_IMPLEMENTATIONS
 #include "decoder.h"
 
@@ -37,13 +39,15 @@
 
 // void assert_true(bool cond) { assert(cond); }
 // #define assert_true assert
-void _assert_true(bool cond, const char * const cond_str, size_t line) {
-  if(cond) {
-    printf(COLOR_RED"ERROR: " COLOR_RESET __FILE__":%lu:0: %s\n", (unsigned long)line, cond_str);
-    exit(-1);
-  }
-}
-#define assert_true(CONDITION) _assert_true(CONDITION, #CONDITION, __LINE__)
+// void _assert(bool cond, const char * const cond_str, size_t line, bool invert) {
+//   if(invert != cond) {
+//     printf(COLOR_RED"ERROR: " COLOR_RESET __FILE__":%lu:0: %s\n", (unsigned long)line, cond_str);
+//     exit(-1);
+//   }
+// }
+// #define assert_false(CONDITION) _assert(CONDITION, #CONDITION, __LINE__, false)
+// #define assert_true(CONDITION) _assert(CONDITION, #CONDITION, __LINE__, true)
+// #define assert assert_true
 
 static const char *TAG = "Futurelab_Coleta";
 
