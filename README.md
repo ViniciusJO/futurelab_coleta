@@ -2,6 +2,8 @@
 
 Projeto baseado na API do ESPRESSIF IDF versao 6.0.
 
+![Circuito](./.assets/dispositivo_coleta_v4.png)
+
 ==> Resumo do projeto <==
 
 O codigo foi projetado para rodar no ESP32 S3 ligado ao módulo BNO055(9DOF) via I2C e ao módulo ELM327 (OBD-II) por USB.
