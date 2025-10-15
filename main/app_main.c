@@ -27,6 +27,10 @@
 #define DECODER_IMPLEMENTATIONS
 #include "decoder.h"
 
+#define ENABLE_USB true
+#define ENABLE_ACCELEROMETER false
+#define ENABLE_MQTT false
+
 /* ============= Configs ============= */
 
 #define WIFI_SSID "moblab"
@@ -474,6 +478,7 @@ void app_main(void) {
 
   // ========= WIFI ==========
 
+#if ENABLE_MQTT
   s_wifi_event_group = xEventGroupCreate();
 
   ESP_ERROR_CHECK(esp_netif_init());
@@ -519,14 +524,18 @@ void app_main(void) {
   // ========= MQTT ==========
 
   esp_mqtt_client_handle_t mqtt_client = mqtt_app_start();
+#endif
 
   // ========= Accelerometer ==========
   
+#if ENABLE_ACCELEROMETER
   ESP_ERROR_CHECK(i2c_master_init());
   ESP_ERROR_CHECK(bno055_init(I2C_PORT));
+#endif
 
   // ========= USB ==========
 
+#if ENABLE_USB
   device_disconnected_sem = xSemaphoreCreateBinary();
   assert_true(device_disconnected_sem);
   wait_elm_response = xSemaphoreCreateBinary();
@@ -562,14 +571,21 @@ void app_main(void) {
   ESP_ERROR_CHECK(vcp_line_coding_set(elm327, &line_coding));
 
   elm327_init(elm327);
+#endif
 
   // ========= Tasks ==========
   
   init_pid_names();
 
+#if ENABLE_MQTT
   (xTaskCreate(mqtt_send_task, "mqtt_send_task", 4096, (void*)mqtt_client, 3, NULL));
+#endif
+#if ENABLE_ACCELEROMETER
   (xTaskCreate(accell_task, "accell_task", 4096, NULL, 3, NULL));
+#endif
+#if ENABLE_USB
   (xTaskCreate(usb_lib_task, "usb_lib", 4096, NULL, 10, NULL));
   (xTaskCreate(elm327_query_task, "elm327_query_task", 4096, (void*)elm327, 2, NULL));
+#endif
 }
 
