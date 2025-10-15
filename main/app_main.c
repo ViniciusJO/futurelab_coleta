@@ -27,7 +27,6 @@
 #define DECODER_IMPLEMENTATIONS
 #include "decoder.h"
 
-
 /* ============= Configs ============= */
 
 #define WIFI_SSID "moblab"
@@ -121,9 +120,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
   esp_mqtt_event_handle_t event = event_data;
   (void) event;
   switch (event_id) {
-    case MQTT_EVENT_CONNECTED: {
-      LOG("MQTT connected");
-    } break;
+    case MQTT_EVENT_CONNECTED: { LOG("MQTT connected"); } break;
     case MQTT_EVENT_DISCONNECTED: { LOG("MQTT disconnected"); } break;
     default: break;
   }
