@@ -436,7 +436,7 @@ static void elm327_init(cdc_acm_dev_hdl_t *device) {
 };
 
 static void elm327_query_task(void *args) {
-  CdcAcmDevice *vcp = (CdcAcmDevice*)args;
+  cdc_acm_dev_hdl_t *vcp = (cdc_acm_dev_hdl_t*)args;
   assert_true(vcp);
   uint8_t i = 0;
 
@@ -554,7 +554,7 @@ void app_main(void) {
 
   ESP_ERROR_CHECK(cdc_acm_host_install(NULL));
 
-  register_ch34x();
+  // register_ch34x();
 
   cdc_acm_host_device_config_t dev_config = {
     .connection_timeout_ms = 5000,
@@ -566,10 +566,11 @@ void app_main(void) {
   };
 
   cdc_acm_dev_hdl_t elm327 = NULL;
-  ch34x_vcp_open(0x7523, 0, &dev_config, &elm327);
-  assert_true(elm327 != NULL && "Failed to open ELM327");
+  esp_err_t open_res = ch34x_vcp_open(0x7523, 0, &dev_config, &elm327);
+  printf(COLOR_BLUE"0x%X\n"COLOR_RESET, open_res);
+  assert_true(open_res == ESP_OK && elm327 != NULL && "Failed to open ELM327");
 
-  // CdcAcmDevice *elm327 = vcp_open(0x1A86, 0x7523, &dev_config);
+  // CdcAcmDevice *elm327 = vcp_open(0/*x1A86*/, 0x7523, &dev_config);
   // assert_true(elm327 != NULL && "Failed to open ELM327");
 
   cdc_acm_line_coding_t line_coding = {
@@ -581,7 +582,7 @@ void app_main(void) {
   cdc_acm_host_line_coding_set(elm327, &line_coding);
   // ESP_ERROR_CHECK(vcp_line_coding_set(elm327, &line_coding));
 
-  elm327_init(elm327);
+  elm327_init(&elm327);
 #endif
 
   // ========= Tasks ==========
