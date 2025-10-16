@@ -17,6 +17,10 @@
 
 #include "colors.h"
 #include "mqtt_client.h"
+#include "usb/cdc_acm_host.h"
+#include "usb/cdc_acm_host_ops.h"
+#include "usb/cdc_host_types.h"
+#include "usb/vcp_ch34x.h"
 #include "wifi.h"
 #include "bno055.h"
 #include "neopixel.h"
@@ -388,13 +392,14 @@ invalid_payload:
   return true;
 }
 
-esp_err_t _send_elm_command(CdcAcmDevice *dev, const char * const cmd, bool wait, bool log) {
+esp_err_t _send_elm_command(cdc_acm_dev_hdl_t *dev, const char * const cmd, bool wait, bool log) {
   if(wait) xSemaphoreTake(wait_elm_response, portMAX_DELAY);
   const uint8_t msg_len = strlen(cmd) + 1;
   char * const msg = (char*)malloc(msg_len);
   sprintf(msg, "%s\r", cmd);
   if(log) printf(">> %s\n", msg);
-  esp_err_t err = vcp_tx_blocking(dev, (uint8_t*)msg, msg_len);
+  // esp_err_t err = vcp_tx_blocking(dev, (uint8_t*)msg, msg_len);
+  esp_err_t err = cdc_acm_host_data_tx_blocking(*dev, (uint8_t*)msg, msg_len, portMAX_DELAY);
   free(msg);
   return err;
 }
@@ -417,13 +422,13 @@ esp_err_t _send_elm_command(CdcAcmDevice *dev, const char * const cmd, bool wait
 enum START_CMD_ENUM { ELM327_START_CMD_LIST ELM372_START_CMD_COUNT, };
 #undef X
 
-static void elm327_init(CdcAcmDevice *vcp) {
+static void elm327_init(cdc_acm_dev_hdl_t *device) {
   #define X(cmd) (char*)#cmd,
   char *start_cmds[ELM372_START_CMD_COUNT] = { ELM327_START_CMD_LIST };
   #undef X
 
   for(uint8_t i = 0; i < ELM372_START_CMD_COUNT; i++) {
-    esp_err_t r = send_elm_cmd_debug_wait(vcp, start_cmds[i]);
+    esp_err_t r = send_elm_cmd_debug_wait(device, start_cmds[i]);
     assert_true(ESP_OK == r);
     // TODO: remove delay when wait on send_elm_cmd is functional
     delay_ms(1000);
@@ -559,8 +564,13 @@ void app_main(void) {
     .data_cb = cdc_handle_rx,
     .user_arg = NULL,
   };
-  CdcAcmDevice *elm327 = vcp_open(0x1A86, 0x7523, &dev_config);
+
+  cdc_acm_dev_hdl_t elm327 = NULL;
+  ch34x_vcp_open(0x7523, 0, &dev_config, &elm327);
   assert_true(elm327 != NULL && "Failed to open ELM327");
+
+  // CdcAcmDevice *elm327 = vcp_open(0x1A86, 0x7523, &dev_config);
+  // assert_true(elm327 != NULL && "Failed to open ELM327");
 
   cdc_acm_line_coding_t line_coding = {
       .dwDTERate = 38400,
@@ -568,7 +578,8 @@ void app_main(void) {
       .bParityType = 0,
       .bDataBits = 8,
   };
-  ESP_ERROR_CHECK(vcp_line_coding_set(elm327, &line_coding));
+  cdc_acm_host_line_coding_set(elm327, &line_coding);
+  // ESP_ERROR_CHECK(vcp_line_coding_set(elm327, &line_coding));
 
   elm327_init(elm327);
 #endif
